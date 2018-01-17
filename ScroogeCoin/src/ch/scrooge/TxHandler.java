@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class TxHandler {
 
-    private UTXOPool utxoPool;
+    private ch.scrooge.UTXOPool utxoPool;
 
     /**
      * Creates a public ledger whose current UTXOPool (collection of unspent transaction outputs) is
@@ -26,6 +26,7 @@ public class TxHandler {
      */
     public boolean isValidTx(Transaction tx) {
         // IMPLEMENT THIS
+        return true;
     }
 
     /**
@@ -35,6 +36,7 @@ public class TxHandler {
      */
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
         // IMPLEMENT THIS
+        return null;
     }
 
 }

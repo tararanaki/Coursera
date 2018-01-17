@@ -2,6 +2,8 @@ package ch.scrooge;
 
 import java.util.ArrayList;
 
+import static ch.scrooge.Crypto.verifySignature;
+
 public class TxHandler {
 
     private ch.scrooge.UTXOPool utxoPool;
@@ -25,8 +27,44 @@ public class TxHandler {
      *     values; and false otherwise.
      */
     public boolean isValidTx(Transaction tx) {
-        // IMPLEMENT THIS
-        return true;
+        double inputSum = 0;
+        double outputSum = 0;
+        UTXOPool uniqueUTXO = new UTXOPool();
+        for (int i = 0; i < tx.getInputs().size(); i++) {
+            Transaction.Input input = tx.getInput(i);
+            UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
+            if (!utxoPool.contains(utxo)) {
+                // 1
+                return false;
+            }
+            Transaction.Output previousOutput = utxoPool.getTxOutput(utxo);
+            if (!verifySignature(previousOutput.address, tx.getRawDataToSign(i), input.signature)) {
+                //2
+                return false;
+            }
+
+            if (uniqueUTXO.contains(utxo)) {
+                //3
+                return false;
+            } else {
+                uniqueUTXO.addUTXO(utxo, previousOutput);
+            }
+            inputSum += previousOutput.value;
+
+        }
+
+        ArrayList<Transaction.Output> outputs = tx.getOutputs();
+        for (Transaction.Output output : outputs) {
+            if (output.value < 0) {
+                //4
+                return false;
+            }
+
+            outputSum += output.value;
+        }
+
+        //5
+        return !(inputSum < outputSum);
     }
 
     /**

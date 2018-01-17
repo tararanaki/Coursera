@@ -74,11 +74,11 @@ public class MaxFeeTxHandler {
      */
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
         List<Transaction> possibleTxsList = Arrays.asList(possibleTxs);
-        Collections.sort(possibleTxsList, Comparator.comparingDouble(this::getFees));
+        possibleTxsList.sort(Comparator.comparingDouble(this::getFees));
 
         List<Transaction> validTransactions = new ArrayList<Transaction>();
 
-        for (Transaction possibleTx : possibleTxs) {
+        for (Transaction possibleTx : possibleTxsList) {
             if (isValidTx(possibleTx)) {
                 validTransactions.add(possibleTx);
                 for (Transaction.Input input : possibleTx.getInputs()) {
@@ -102,6 +102,10 @@ public class MaxFeeTxHandler {
         for (int i = 0; i < tx.getInputs().size(); i++) {
             Transaction.Input input = tx.getInput(i);
             UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
+            if (!utxoPool.contains(utxo)) {
+                // 1
+                return 0.0;
+            }
             Transaction.Output previousOutput = utxoPool.getTxOutput(utxo);
             inputSum += previousOutput.value;
         }

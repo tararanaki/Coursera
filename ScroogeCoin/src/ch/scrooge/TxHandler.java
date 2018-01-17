@@ -1,6 +1,7 @@
 package ch.scrooge;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static ch.scrooge.Crypto.verifySignature;
 
@@ -73,8 +74,18 @@ public class TxHandler {
      * updating the current UTXO pool as appropriate.
      */
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
-        // IMPLEMENT THIS
-        return null;
+        List<Transaction> validTransactions = new ArrayList<Transaction>();
+
+        for (Transaction possibleTx : possibleTxs) {
+            if (isValidTx(possibleTx)) {
+                validTransactions.add(possibleTx);
+                for (Transaction.Input input : possibleTx.getInputs()) {
+                    utxoPool.removeUTXO(new UTXO(input.prevTxHash, input.outputIndex));
+                }
+            }
+        }
+
+        return (Transaction[]) validTransactions.toArray();
     }
 
 }

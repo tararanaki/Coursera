@@ -3,11 +3,9 @@ package ch.scrooge;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ch.scrooge.Crypto.verifySignature;
-
 public class TxHandler {
 
-    private ch.scrooge.UTXOPool utxoPool;
+    private UTXOPool utxoPool;
 
     /**
      * Creates a public ledger whose current UTXOPool (collection of unspent transaction outputs) is
@@ -39,7 +37,7 @@ public class TxHandler {
                 return false;
             }
             Transaction.Output previousOutput = utxoPool.getTxOutput(utxo);
-            if (!verifySignature(previousOutput.address, tx.getRawDataToSign(i), input.signature)) {
+            if (!Crypto.verifySignature(previousOutput.address, tx.getRawDataToSign(i), input.signature)) {
                 //2
                 return false;
             }
@@ -82,10 +80,16 @@ public class TxHandler {
                 for (Transaction.Input input : possibleTx.getInputs()) {
                     utxoPool.removeUTXO(new UTXO(input.prevTxHash, input.outputIndex));
                 }
+
+                ArrayList<Transaction.Output> outputs = possibleTx.getOutputs();
+                for (int i = 0; i < outputs.size(); i++) {
+                    Transaction.Output output = outputs.get(i);
+                    utxoPool.addUTXO(new UTXO(possibleTx.getHash(), i), output);
+                }
             }
         }
 
-        return (Transaction[]) validTransactions.toArray();
+        return validTransactions.toArray(new Transaction[validTransactions.size()]);
     }
 
 }
